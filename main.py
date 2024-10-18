@@ -1,89 +1,60 @@
-VELOCIDADE_ALIEN = 2
-# Quanto menor, mais rápido
+# Definição velocidade e quntidade dos aliens
+VELOCIDADE_ALIEN = 2 #<<< mais rápido
+QUANTIDADE_ALIENS = 10 
 
-QUANTIDADE_ALIENS = 10
-
-""""
-Você também pode adicionar seus próprios personagens (dica: olhe as imagens alien.png e spaceship.png!), sua fonte, cores e sua música!
-"""
 import pygame  # Importa a biblioteca pygame
-
 import random  # Importa a biblioteca random
-
 import sys  # Importa a biblioteca sys para interagir com o sistema operacional
+from pygame.locals import QUIT  # Importa QUIT da biblioteca pygame.locals para criar o sistema de sair do game
 
-from pygame.locals import QUIT  # Importa a constante QUIT da biblioteca pygame.locals para criar o sistema de sair do game
-
-# Inicializa o Pygame e configura a tela
 pygame.init()  # Inicializa o pygame
+setFullScreenMode = pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
 
-setFullScreenMode = pygame.display.set_mode(
-    (0, 0), pygame.FULLSCREEN)  
-# Cria e Define a tela em modo tela cheia
-
-pygame.display.set_caption(
-    'Atire nos Aliens!')  # Define o título da janela do jogo
+pygame.display.set_caption('Atire nos Aliens!')  # Define o título da janela do jogo
 
 LARGURA, ALTURA = setFullScreenMode.get_size()  # geta a dimensão da tela
 
-FONTE_FIM_JOGO = pygame.font.SysFont(
-    'comicsans', 150)  # Define a fonte para o texto de fim de jogo
+FONTE_FIM_JOGO = pygame.font.SysFont('comicsans', 150)  # Define a fonte para o texto de fim de jogo
 
-# Carrega e redimensiona as imagens
 
-setNaveImage = pygame.image.load(
-    'cr7.jpg').convert_alpha()  # imagem da nave espacial
+setNaveImage = pygame.image.load('cr7.jpg').convert_alpha()  # Define a imagem da Nave
+setAlienImage = pygame.image.load('copa-do-mundo.webp').convert_alpha() # Define a imagem do Alien
 
-setAlienImage = pygame.image.load(
-    'copa-do-mundo.webp').convert_alpha()  # imagem do alienígena
+NAVE = pygame.transform.scale(setNaveImage,(60, 60))  # Redimensiona a imagem da nave espacial para 50x50 pixels
+ALIEN = pygame.transform.scale(setAlienImage,(55, 55))  # Redimensiona a imagem do alienígena para 50x50 pixels
 
-NAVE = pygame.transform.scale(
-    setNaveImage,
-    (60, 60))  # Redimensiona a imagem da nave espacial para 50x50 pixels
-ALIEN = pygame.transform.scale(
-    setAlienImage,
-    (55, 55))  # Redimensiona a imagem do alienígena para 50x50 pixels
+
 
 # Variáveis
-posicao_nave_x, posicao_nave_y = LARGURA // 2, ALTURA - 100  # Define a posição inicial da nave espacial
-aliens = [(random.randint(0, LARGURA), random.randint(-ALTURA, 0))
+posicao_nave_x, posicao_nave_y = LARGURA // 2, ALTURA - 100  # Coloca a nave espacial no meio da tela
+
+aliens = [(random.randint(0, LARGURA), random.randint(-ALTURA, 0)) # Cria um random para mostrar os Aliens na tela, o 1° define a posição do alien referente a largura da tela; Também define a posição aleatória do Alien em relação a altura, começa com "-ALTURA" pq é para não aparecerem na tela.
           for _ in range(QUANTIDADE_ALIENS)
           ]  # Cria uma lista de aliens com posições aleatórias
-tiros = []  # Cria uma lista vazia para armazenar os tiros
 
-# Loop principal
-clock = pygame.time.Clock() 
-# Cria um objeto Clock para controlar a velocidade do jogo
+tiros = []  # Lista para os tiros
 
-fim_jogo = False  # Variável para controlar o estado do jogo (se o jogo terminou ou não)
-while True:  # Loop infinito para manter o jogo em execução
-  clock.tick(
-      120)  # Limita a taxa de quadros do game (60 para 30fps e 120 para 60)
+clock = pygame.time.Clock()  # Variável que irá controlar a velocidade do jogo
+
+fim_jogo = False
+while True:
+  clock.tick(120)  # Define o FPS do Jogo (60 para 30fps e 120 para 60)
   
   for event in pygame.event.get():  # Obtém todos os eventos do pygame
-    if event.type == QUIT or (event.type == pygame.KEYDOWN
-                              and event.key == pygame.K_ESCAPE):
-      pygame.quit()  # Encerra o pygame
-      sys.exit()  # Encerra o programa
+    if event.type == QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+      pygame.quit()
+      sys.exit()
+  if fim_jogo == False: # Se o jogo estiver rodando
+    teclas = pygame.key.get_pressed()  # Guetar as teclas pressionadas
+    if teclas[pygame.K_LEFT]:  # Tecla da esquerda
+      posicao_nave_x -= 4  # Move a nave pra esquerda
+    if teclas[pygame.K_RIGHT]:  # Tecla direita
+      posicao_nave_x += 4  # Move a nave pra direita
+    if teclas[pygame.K_SPACE]:  # Se pressionada o space
+      tiros.append([posicao_nave_x, posicao_nave_y]) # Adiciona os tiros no final da lista da variável da lista Tiros através da "Função" Append
 
-  if fim_jogo == False:  # Se o jogo não tiver terminado
-
-    teclas = pygame.key.get_pressed()  # Gueta os eventos do teclado
-    if teclas[pygame.K_LEFT]:  # Se a tecla esquerda estiver pressionada
-      posicao_nave_x -= 3  # Move a nave pra esquerda
-    if teclas[pygame.K_RIGHT]:  # Se a tecla direita estiver pressionada
-      posicao_nave_x += 3  # Move a nave pra direita
-    if teclas[pygame.K_SPACE]:  # Se a tecla espaço estiver pressionada
-      tiros.append([posicao_nave_x, posicao_nave_y])
-# Adiciona um tiro à lista de tiros
-
-    # Atualiza os tiros e os aliens
-    tiros = [[x, y - 5] for x, y in tiros if y > 0
-             ]  # Move os tiros para cima e remove os tiros que saíram da tela
-    aliens = [
-        (x, y + VELOCIDADE_ALIEN) if y < ALTURA else
-        (random.randint(0, LARGURA), 0) for x, y in aliens
-    ]  # Move os aliens para baixo e gera novos aliens quando eles saem da tela
+    tiros = [[x, y - 5] for x, y in tiros if y > 0]  # Move os tiros para cima e remove os tiros que saíram da tela
+    aliens = [ (x, y + VELOCIDADE_ALIEN) if y < ALTURA else (random.randint(0, LARGURA), 0) for x, y in aliens ]  # Move os aliens para baixo e gera novos aliens quando eles saem da tela
 
     # Verifica colisão: tiros e aliens
     for ax, ay in aliens:  # Para cada alien na lista de aliens
